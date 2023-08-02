@@ -1,22 +1,18 @@
 const contacts = require("../models/contacts");
 const { putSchema, postSchema } = require("../schemas/contacts");
-// const { ctrlWrapper } = require("../helpers/ctrlWrapper");
+const { ctrlWrapper } = require("../helpers/ctrlWrapper");
 const { ApiError } = require("../helpers/apiError");
 const updateContact = async (req, res) => {
   const { error } = putSchema.validate(req.body);
   if (error) {
-    res
-      .status(400)
-      .json(
-        "Please fill at least one of the following fields: name, email, phone"
-      );
+    throw ApiError(400, error.message);
   } else {
     const result = await contacts.updateContact(req.params.contactId, req.body);
     if (result === null) {
-      res.status(404).json(result);
-    } else {
-      res.status(200).json(result);
+      throw ApiError(404, error.message);
     }
+
+    res.status(200).json(result);
   }
 };
 const createContact = async (req, res) => {
@@ -46,9 +42,9 @@ const getContacts = async (req, res) => {
 };
 
 module.exports = {
-  updateContact,
-  createContact,
-  deleteContact,
-  getContactById,
-  getContacts,
+  updateContact: ctrlWrapper(updateContact),
+  createContact: ctrlWrapper(createContact),
+  deleteContact: ctrlWrapper(deleteContact),
+  getContactById: ctrlWrapper(getContactById),
+  getContacts: ctrlWrapper(getContacts),
 };
