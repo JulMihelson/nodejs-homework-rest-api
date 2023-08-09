@@ -1,50 +1,72 @@
-const contacts = require("../models/contacts");
-const { putSchema, postSchema } = require("../schemas/contacts");
-const { ctrlWrapper } = require("../helpers/ctrlWrapper");
 const { ApiError } = require("../helpers/apiError");
-const updateContact = async (req, res) => {
-  const { error } = putSchema.validate(req.body);
-  if (error) {
-    throw ApiError(400, error.message);
-  } else {
-    const result = await contacts.updateContact(req.params.contactId, req.body);
-    if (result === null) {
-      throw ApiError(404, error.message);
-    }
+const { Schema, model } = require("mongoose");
+const contactSchema = new Schema({
+  name: {
+    type: String,
+    required: [true, "Set name for contact"],
+  },
+  email: {
+    type: String,
+  },
+  phone: {
+    type: String,
+  },
+  favorite: {
+    type: Boolean,
+    default: false,
+  },
+});
+const Contact = model("contact", contactSchema);
 
-    res.status(200).json(result);
+const getContacts = async (req, res) => {
+  const result = await Contact.find({});
+  res.json(result);
+};
+
+const getContactById = async (req, res) => {
+  const { id } = req.params;
+  const result = await Contact.findOne({ _id: id });
+  console.log(id);
+  if (!result) {
+    throw ApiError(404);
   }
+  res.json(result);
+};
+
+const removeContactById = async (req, res) => {
+  const { id } = req.params;
+  const result = await Contact.findByIdAndRemove(id);
+  if (!result) {
+    throw ApiError(404);
+  }
+  res.json({ message: "Deleted successfully" });
 };
 const createContact = async (req, res) => {
-  const { error } = postSchema.validate(req.body);
-  if (error) {
-    res.json("All the fields are required");
-  } else {
-    const result = await contacts.addContact(req.body);
-    res.status(201).json(result);
+  const result = await Contact.create(req.body);
+  res.status(201).json(result);
+};
+const updateContact = async (req, res) => {
+  const { id } = req.params;
+  const result = await Contact.findByIdAndUpdate(id, req.body, { new: true });
+  if (!result) {
+    throw ApiError(404, "Not Found");
   }
+  res.status(201).json(result);
 };
-const deleteContact = async (req, res) => {
-  const result = await contacts.removeContact(req.params.contactId);
-  result
-    ? res.status(200).json("Contact was deleted")
-    : throw ApiError(404, "Requested contact is not found");
+const checkFavorite = async (req, res) => {
+  const { id } = req.params;
+  const result = await Contact.findByIdAndUpdate(id, req.body, { new: true });
+  if (!result) {
+    throw ApiError(404, "Not found");
+  }
+  res.status(201).json(result);
 };
-const getContactById = async (req, res) => {
-  const result = await contacts.getContactById(req.params.contactId);
-  result
-    ? res.status(200).json(result)
-    : throw ApiError(404, "Requested contact is not found");
-};
-const getContacts = async (req, res) => {
-  const result = await contacts.listContacts();
-  res.status(200).json(result);
-};
-
 module.exports = {
-  updateContact: ctrlWrapper(updateContact),
-  createContact: ctrlWrapper(createContact),
-  deleteContact: ctrlWrapper(deleteContact),
-  getContactById: ctrlWrapper(getContactById),
-  getContacts: ctrlWrapper(getContacts),
+  Contact,
+  getContacts,
+  getContactById,
+  removeContactById,
+  createContact,
+  updateContact,
+  checkFavorite,
 };
