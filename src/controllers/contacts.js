@@ -1,5 +1,5 @@
 const { ApiError } = require("../helpers/apiError");
-const { Schema, model } = require("mongoose");
+const { Schema, model, patchFavouriteSchema } = require("mongoose");
 const contactSchema = new Schema({
   name: {
     type: String,
@@ -11,7 +11,7 @@ const contactSchema = new Schema({
   phone: {
     type: String,
   },
-  favorite: {
+  favourite: {
     type: Boolean,
     default: false,
   },
@@ -53,13 +53,30 @@ const updateContact = async (req, res) => {
   }
   res.status(201).json(result);
 };
-const checkFavorite = async (req, res) => {
-  const { id } = req.params;
-  const result = await Contact.findByIdAndUpdate(id, req.body, { new: true });
-  if (!result) {
-    throw ApiError(404, "Not found");
+const checkFavourite = async (req, res) => {
+  const { error } = patchFavouriteSchema.validate(req.body);
+  if (error) {
+    res.status(400).json("Missing field favorite");
+  } else {
+    const result = await Contact.findByIdAndUpdate(
+      req.params.contactId,
+      req.body
+    );
+    if (result === null) {
+      res.status(404).json(result);
+    } else {
+      switch (result.favourite) {
+        case true:
+          res.status(200).json("Contact added as favourite");
+          break;
+        case false:
+          res.status(200).json("Contact removed from favourite");
+          break;
+        default:
+          res.status(200).json("Favorite contact has been updated");
+      }
+    }
   }
-  res.status(201).json(result);
 };
 module.exports = {
   Contact,
@@ -68,5 +85,5 @@ module.exports = {
   removeContactById,
   createContact,
   updateContact,
-  checkFavorite,
+  checkFavourite,
 };
