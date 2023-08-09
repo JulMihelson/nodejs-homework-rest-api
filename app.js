@@ -32,7 +32,7 @@ app.use((req, res, next) => {
 });
 
 app.use((error, req, res, next) => {
-  const { status = 500, message = error.message } = error;
+  const { status = 500, message = "Server error" } = error;
   res.status(status).json({ message });
 });
 
