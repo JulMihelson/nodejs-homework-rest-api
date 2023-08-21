@@ -21,10 +21,9 @@ const auth = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    if (!error.status) {
-      error.status = 401;
-      error.message = "Unauthorized";
-    }
+    error.status = 401;
+    error.message = "Unauthorized";
+
     next(error);
   }
 };

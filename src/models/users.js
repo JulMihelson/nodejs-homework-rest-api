@@ -13,11 +13,7 @@ const userSchema = new Schema({
     unique: true,
     match: emailRegExp,
   },
-  subscription: {
-    type: String,
-    enum: ["starter", "pro", "business"],
-    default: "starter",
-  },
+  avatarURL: String,
   owner: {
     type: Schema.Types.ObjectId,
     ref: "user",
