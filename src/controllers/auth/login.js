@@ -1,28 +1,28 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-
 const { User } = require("../../schemas/users");
-
-const { RequestError } = require("../../helpers/RequestError");
-
+const HttpError = require("../../helpers/HttpError");
 const { SECRET_KEY } = process.env;
 
 const login = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
   if (!user) {
-    throw RequestError(401, "Email or password wrong");
+    throw HttpError(401, "Email or password invalid");
   }
   const passwordCompare = await bcrypt.compare(password, user.password);
   if (!passwordCompare) {
-    throw RequestError(401, "Email or password wrong");
+    throw HttpError(405, "Email or password invalid");
   }
+
   const payload = {
     id: user._id,
   };
-  const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "24h" });
+
+  const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "23h" });
   await User.findByIdAndUpdate(user._id, { token });
+
   res.json({
     token,
   });
