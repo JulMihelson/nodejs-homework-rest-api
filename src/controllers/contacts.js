@@ -7,6 +7,7 @@ const {
   putSchema,
 } = require("mongoose");
 const ctrlWrapper = require("../helpers/ctrlWrapper");
+
 const contactSchema = new Schema({
   name: {
     type: String,
