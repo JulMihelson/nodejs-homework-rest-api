@@ -29,6 +29,14 @@ router.post(
   ctrlWrapper(ctrl.registerUser)
 );
 
+router.get("/verify/:verificationToken", ctrlWrapper(ctrl.verify));
+
+router.post(
+  "/verify",
+  validateBody(schemas.verifyEmailSchema),
+  ctrlWrapper(ctrl.resendEmail)
+);
+
 router.patch(
   "/avatars",
   auth,
