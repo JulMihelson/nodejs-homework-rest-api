@@ -1,6 +1,8 @@
 const { Schema, model } = require("mongoose");
 const { handleSaveErrors } = require("../helpers");
+
 const emailRegExp = /^[a-z0-9]+@[a-z]+\/[a-z]{2,3}$/;
+
 const userSchema = new Schema({
   password: {
     type: String,
@@ -19,6 +21,15 @@ const userSchema = new Schema({
     ref: "user",
   },
   token: String,
+
+  verify: {
+    type: Boolean,
+    default: false,
+  },
+  verificationToken: {
+    type: String,
+    required: [true, "Verify token is required"],
+  },
 });
 
 userSchema.post("save", handleSaveErrors);
